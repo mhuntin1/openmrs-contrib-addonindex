@@ -36,20 +36,20 @@ import io.searchbox.core.SearchResult;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class ElasticSearchIndexManualTest {
-	
+
 	@Autowired
 	private ElasticSearchIndex elasticSearchIndex;
-	
+
 	@Autowired
 	private JestClient client;
-	
+
 	@Test
 	public void testIndex() throws Exception {
 		AddOnVersion v = new AddOnVersion();
 		v.setVersion(new Version("1.0"));
 		v.setDownloadUri("http://www.google.com");
 		v.addLanguage("en");
-		
+
 		AddOnInfoAndVersions a = new AddOnInfoAndVersions();
 		a.setUid("testing-module");
 		a.setModulePackage("testing-mod");
@@ -58,20 +58,20 @@ public class ElasticSearchIndexManualTest {
 		a.setName("Testing ES");
 		a.setDescription("This is a test");
 		a.addVersion(v);
-		
+
 		elasticSearchIndex.index(a);
-		
+
 		AddOnInfoAndVersions byUid = elasticSearchIndex.getByUid(a.getUid());
 		assertThat(byUid.getName(), is(a.getName()));
 		assertThat(byUid.getVersions().get(0).getVersion().toString(), is("1.0"));
-		
+
 		Collection<AddOnInfoAndVersions> allByType = elasticSearchIndex.getAllByType(AddOnType.OMOD);
 		assertThat(allByType.size(), greaterThanOrEqualTo(1));
-		
+
 		Collection<AddOnInfoSummary> results = elasticSearchIndex.search(AddOnType.OMOD, "testing", null);
 		assertThat(allByType.size(), greaterThanOrEqualTo(1));
 	}
-	
+
 	@Test
 	public void testSearch() throws Exception {
 		SearchResult result = client.execute(new Search.Builder(new SearchSourceBuilder()
@@ -120,7 +120,7 @@ public class ElasticSearchIndexManualTest {
 			System.out.println(s);
 		}
 	}
-	
+
 	@Test
 	public void testTopDownloaded() throws Exception {
 		List<AddOnInfoSummaryAndStats> top = elasticSearchIndex.getTopDownloaded();
@@ -128,5 +128,5 @@ public class ElasticSearchIndexManualTest {
 			System.out.println(a.getDownloadCount() + "\t" + a.getSummary().getName());
 		}
 	}
-	
+
 }
